@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPL 2026 Predictor</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
+        table { border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: center; }
+        th { background-color: #2c3e50; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .win-select { padding: 5px; border-radius: 4px; cursor: pointer; }
+        h2 { color: #2c3e50; text-align: center; }
+        .points-table tr:nth-child(-n+4) { background-color: #e8f5e9; } /* Top 4 Highlight */
+    </style>
+</head>
+<body>
+
+    <h2>IPL 2026 Interactive Predictor</h2>
+
+    <div class="container">
+        <!-- Remaining Fixtures -->
+        <div>
+            <h3>Remaining Games</h3>
+            <table id="fixturesTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Matchup</th>
+                        <th>Select Winner</th>
+                    </tr>
+                </thead>
+                <tbody id="fixturesBody">
+                    <!-- JavaScript will populate this -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Live Points Table -->
+        <div>
+            <h3>Projected Points Table</h3>
+            <table class="points-table">
+                <thead>
+                    <tr>
+                        <th>Pos</th>
+                        <th>Team</th>
+                        <th>P</th>
+                        <th>W</th>
+                        <th>Pts</th>
+                    </tr>
+                </thead>
+                <tbody id="pointsBody">
+                    <!-- JavaScript will calculate this -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Current standings as of May 11, 2026
+        const initialTeams = [
+            { name: "RCB", p: 11, w: 7, pts: 14 },
+            { name: "SRH", p: 11, w: 7, pts: 14 },
+            { name: "GT", p: 11, w: 7, pts: 14 },
+            { name: "PBKS", p: 10, w: 6, pts: 12 },
+            { name: "CSK", p: 11, w: 6, pts: 12 },
+            { name: "RR", p: 11, w: 6, pts: 12 },
+            { name: "KKR", p: 10, w: 4, pts: 8 },
+            { name: "DC", p: 11, w: 4, pts: 8 },
+            { name: "MI", p: 11, w: 3, pts: 6 },
+            { name: "LSG", p: 11, w: 3, pts: 6 }
+        ];
+
+        const fixtures = [
+            { date: "May 11", t1: "PBKS", t2: "DC" },
+            { date: "May 12", t1: "GT", t2: "SRH" },
+            { date: "May 13", t1: "RCB", t2: "KKR" },
+            { date: "May 14", t1: "PBKS", t2: "MI" },
+            { date: "May 15", t1: "LSG", t2: "CSK" },
+            { date: "May 16", t1: "KKR", t2: "GT" },
+            { date: "May 17", t1: "PBKS", t2: "RCB" },
+            { date: "May 17", t1: "DC", t2: "RR" },
+            { date: "May 18", t1: "CSK", t2: "SRH" },
+            { date: "May 19", t1: "RR", t2: "LSG" },
+            { date: "May 20", t1: "KKR", t2: "MI" },
+            { date: "May 21", t1: "CSK", t2: "GT" },
+            { date: "May 22", t1: "SRH", t2: "RCB" },
+            { date: "May 23", t1: "LSG", t2: "PBKS" },
+            { date: "May 24", t1: "MI", t2: "RR" },
+            { date: "May 24", t1: "KKR", t2: "DC" }
+        ];
+
+        function init() {
+            const fBody = document.getElementById('fixturesBody');
+            fixtures.forEach((m, index) => {
+                const row = `<tr>
+                    <td>${m.date}</td>
+                    <td>${m.t1} vs ${m.t2}</td>
+                    <td>
+                        <select class="win-select" data-index="${index}" onchange="updateTable()">
+                            <option value="">- Select -</option>
+                            <option value="${m.t1}">${m.t1}</option>
+                            <option value="${m.t2}">${m.t2}</option>
+                        </select>
+                    </td>
+                </tr>`;
+                fBody.innerHTML += row;
+            });
+            updateTable();
+        }
+
+        function updateTable() {
+            // Clone initial data
+            let currentStats = initialTeams.map(t => ({ ...t }));
+            const dropdowns = document.querySelectorAll('.win-select');
+
+            dropdowns.forEach(select => {
+                const winner = select.value;
+                if (winner) {
+                    const matchIndex = select.getAttribute('data-index');
+                    const match = fixtures[matchIndex];
+                    
+                    // Update Winner
+                    let wTeam = currentStats.find(t => t.name === winner);
+                    wTeam.w += 1;
+                    wTeam.p += 1;
+                    wTeam.pts += 2;
+
+                    // Update Loser
+                    const loser = (winner === match.t1) ? match.t2 : match.t1;
+                    let lTeam = currentStats.find(t => t.name === loser);
+                    lTeam.p += 1;
+                }
+            });
+
+            // Sort by Points, then Wins
+            currentStats.sort((a, b) => b.pts - a.pts || b.w - a.w);
+
+            const pBody = document.getElementById('pointsBody');
+            pBody.innerHTML = '';
+            currentStats.forEach((t, i) => {
+                pBody.innerHTML += `<tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${t.name}</strong></td>
+                    <td>${t.p}</td>
+                    <td>${t.w}</td>
+                    <td><strong>${t.pts}</strong></td>
+                </tr>`;
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
