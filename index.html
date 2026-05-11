@@ -80,14 +80,12 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Points Table Styling */
         .pos-cell { font-weight: bold; width: 30px; }
         .team-cell { font-weight: 600; color: var(--accent-blue); }
         .pts-cell { font-weight: bold; color: var(--accent-green); }
 
         .top-four { background: rgba(74, 222, 128, 0.05); }
 
-        /* Fixtures Styling */
         .match-row:hover { background: rgba(255,255,255,0.02); }
         .date-text { font-size: 0.8rem; color: var(--text-dim); }
 
@@ -119,7 +117,6 @@
     <h1>IPL 2026 Predictor</h1>
 
     <div class="dashboard">
-        <!-- Fixtures Card -->
         <div class="card">
             <h3>Remaining Fixtures <span class="badge">LIVE</span></h3>
             <table id="fixturesTable">
@@ -134,7 +131,6 @@
             </table>
         </div>
 
-        <!-- Standings Card -->
         <div class="card">
             <h3>Projected Standings</h3>
             <table id="pointsTable">
@@ -185,23 +181,38 @@
             { date: "May 24", t1: "KKR", t2: "DC" }
         ];
 
+        // Function to determine which team is more likely to win based on current standings
+        function getProbableWinner(teamA, teamB) {
+            const t1 = initialTeams.find(t => t.name === teamA);
+            const t2 = initialTeams.find(t => t.name === teamB);
+            
+            // Priority 1: Higher Points
+            if (t1.pts !== t2.pts) {
+                return t1.pts > t2.pts ? teamA : teamB;
+            }
+            // Priority 2: Higher Win Count if points are equal
+            return t1.w >= t2.w ? teamA : teamB;
+        }
+
         function init() {
             const fBody = document.getElementById('fixturesBody');
             fixtures.forEach((m, index) => {
+                const probableWinner = getProbableWinner(m.t1, m.t2);
+                
                 const row = `<tr class="match-row">
                     <td class="date-text">${m.date}</td>
                     <td>${m.t1} <small>vs</small> ${m.t2}</td>
                     <td>
                         <select class="win-select" data-index="${index}" onchange="updateTable()">
                             <option value="">Pending</option>
-                            <option value="${m.t1}">${m.t1}</option>
-                            <option value="${m.t2}">${m.t2}</option>
+                            <option value="${m.t1}" ${probableWinner === m.t1 ? 'selected' : ''}>${m.t1}</option>
+                            <option value="${m.t2}" ${probableWinner === m.t2 ? 'selected' : ''}>${m.t2}</option>
                         </select>
                     </td>
                 </tr>`;
                 fBody.innerHTML += row;
             });
-            updateTable();
+            updateTable(); // Run update immediately to show projected standings on load
         }
 
         function updateTable() {
@@ -223,6 +234,7 @@
                 }
             });
 
+            // Sort by Points, then by Wins
             currentStats.sort((a, b) => b.pts - a.pts || b.w - a.w);
 
             const pBody = document.getElementById('pointsBody');
