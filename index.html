@@ -3,63 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPL 2026 Predictor</title>
+    <title>IPL 2026 | Playoff Predictor</title>
     <style>
-        body { font-family: sans-serif; background-color: #f4f4f9; padding: 20px; }
-        .container { display: flex; gap: 40px; flex-wrap: wrap; justify-content: center; }
-        table { border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: center; }
-        th { background-color: #2c3e50; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        .win-select { padding: 5px; border-radius: 4px; cursor: pointer; }
-        h2 { color: #2c3e50; text-align: center; }
-        .points-table tr:nth-child(-n+4) { background-color: #e8f5e9; } /* Top 4 Highlight */
+        :root {
+            --primary-bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        h3 {
+            margin-top: 0;
+            border-bottom: 2px solid var(--accent-blue);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            padding: 12px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Points Table Styling */
+        .pos-cell { font-weight: bold; width: 30px; }
+        .team-cell { font-weight: 600; color: var(--accent-blue); }
+        .pts-cell { font-weight: bold; color: var(--accent-green); }
+
+        .top-four { background: rgba(74, 222, 128, 0.05); }
+
+        /* Fixtures Styling */
+        .match-row:hover { background: rgba(255,255,255,0.02); }
+        .date-text { font-size: 0.8rem; color: var(--text-dim); }
+
+        select {
+            background: #0f172a;
+            color: white;
+            border: 1px solid var(--accent-blue);
+            padding: 6px 10px;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        select:hover { background: #1e293b; }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: var(--accent-blue);
+            color: #000;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <h2>IPL 2026 Interactive Predictor</h2>
+    <h1>IPL 2026 Predictor</h1>
 
-    <div class="container">
-        <!-- Remaining Fixtures -->
-        <div>
-            <h3>Remaining Games</h3>
+    <div class="dashboard">
+        <!-- Fixtures Card -->
+        <div class="card">
+            <h3>Remaining Fixtures <span class="badge">LIVE</span></h3>
             <table id="fixturesTable">
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Matchup</th>
-                        <th>Select Winner</th>
+                        <th>Match</th>
+                        <th>Winner</th>
                     </tr>
                 </thead>
-                <tbody id="fixturesBody">
-                    <!-- JavaScript will populate this -->
-                </tbody>
+                <tbody id="fixturesBody"></tbody>
             </table>
         </div>
 
-        <!-- Live Points Table -->
-        <div>
-            <h3>Projected Points Table</h3>
-            <table class="points-table">
+        <!-- Standings Card -->
+        <div class="card">
+            <h3>Projected Standings</h3>
+            <table id="pointsTable">
                 <thead>
                     <tr>
-                        <th>Pos</th>
+                        <th>#</th>
                         <th>Team</th>
                         <th>P</th>
                         <th>W</th>
                         <th>Pts</th>
                     </tr>
                 </thead>
-                <tbody id="pointsBody">
-                    <!-- JavaScript will calculate this -->
-                </tbody>
+                <tbody id="pointsBody"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // Current standings as of May 11, 2026
         const initialTeams = [
             { name: "RCB", p: 11, w: 7, pts: 14 },
             { name: "SRH", p: 11, w: 7, pts: 14 },
@@ -95,12 +188,12 @@
         function init() {
             const fBody = document.getElementById('fixturesBody');
             fixtures.forEach((m, index) => {
-                const row = `<tr>
-                    <td>${m.date}</td>
-                    <td>${m.t1} vs ${m.t2}</td>
+                const row = `<tr class="match-row">
+                    <td class="date-text">${m.date}</td>
+                    <td>${m.t1} <small>vs</small> ${m.t2}</td>
                     <td>
                         <select class="win-select" data-index="${index}" onchange="updateTable()">
-                            <option value="">- Select -</option>
+                            <option value="">Pending</option>
                             <option value="${m.t1}">${m.t1}</option>
                             <option value="${m.t2}">${m.t2}</option>
                         </select>
@@ -112,7 +205,6 @@
         }
 
         function updateTable() {
-            // Clone initial data
             let currentStats = initialTeams.map(t => ({ ...t }));
             const dropdowns = document.querySelectorAll('.win-select');
 
@@ -122,31 +214,27 @@
                     const matchIndex = select.getAttribute('data-index');
                     const match = fixtures[matchIndex];
                     
-                    // Update Winner
                     let wTeam = currentStats.find(t => t.name === winner);
-                    wTeam.w += 1;
-                    wTeam.p += 1;
-                    wTeam.pts += 2;
+                    wTeam.w += 1; wTeam.p += 1; wTeam.pts += 2;
 
-                    // Update Loser
                     const loser = (winner === match.t1) ? match.t2 : match.t1;
                     let lTeam = currentStats.find(t => t.name === loser);
                     lTeam.p += 1;
                 }
             });
 
-            // Sort by Points, then Wins
             currentStats.sort((a, b) => b.pts - a.pts || b.w - a.w);
 
             const pBody = document.getElementById('pointsBody');
             pBody.innerHTML = '';
             currentStats.forEach((t, i) => {
-                pBody.innerHTML += `<tr>
-                    <td>${i + 1}</td>
-                    <td><strong>${t.name}</strong></td>
+                const rowClass = i < 4 ? 'top-four' : '';
+                pBody.innerHTML += `<tr class="${rowClass}">
+                    <td class="pos-cell">${i + 1}</td>
+                    <td class="team-cell">${t.name}</td>
                     <td>${t.p}</td>
                     <td>${t.w}</td>
-                    <td><strong>${t.pts}</strong></td>
+                    <td class="pts-cell">${t.pts}</td>
                 </tr>`;
             });
         }
