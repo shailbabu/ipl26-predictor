@@ -10,6 +10,7 @@
             --card-bg: #1e293b;
             --accent-blue: #38bdf8;
             --accent-green: #4ade80;
+            --accent-red: #ef4444;
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
         }
@@ -25,122 +26,74 @@
             align-items: center;
         }
 
-        h1 {
-            color: var(--accent-blue);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 30px;
-            text-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
-        }
+        .header-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; }
+        h1 { color: var(--accent-blue); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; text-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
 
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            max-width: 1200px;
-            width: 100%;
-        }
+        .toggle-container { display: flex; align-items: center; gap: 15px; background: var(--card-bg); padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent-blue); }
+        input:checked + .slider:before { transform: translateX(26px); }
 
-        @media (max-width: 900px) {
-            .dashboard { grid-template-columns: 1fr; }
-        }
+        .toggle-label { font-size: 0.9rem; font-weight: bold; color: var(--text-dim); transition: 0.3s; }
+        .active-label { color: var(--accent-blue); }
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.05);
-        }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; width: 100%; }
+        @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } }
 
-        h3 {
-            margin-top: 0;
-            border-bottom: 2px solid var(--accent-blue);
-            padding-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th {
-            text-align: left;
-            color: var(--text-dim);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            padding: 12px;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); }
+        h3 { margin-top: 0; border-bottom: 2px solid var(--accent-blue); padding-bottom: 10px; display: flex; justify-content: space-between; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: var(--text-dim); font-size: 0.85rem; text-transform: uppercase; padding: 12px; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .pos-cell { font-weight: bold; width: 30px; }
         .team-cell { font-weight: 600; color: var(--accent-blue); }
         .pts-cell { font-weight: bold; color: var(--accent-green); }
-
         .top-four { background: rgba(74, 222, 128, 0.05); }
+        
+        select { background: #0f172a; color: white; border: 1px solid var(--accent-blue); padding: 6px 10px; border-radius: 6px; outline: none; cursor: pointer; width: 100%; }
+        select:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--text-dim); }
 
-        .match-row:hover { background: rgba(255,255,255,0.02); }
-        .date-text { font-size: 0.8rem; color: var(--text-dim); }
-
-        select {
-            background: #0f172a;
-            color: white;
-            border: 1px solid var(--accent-blue);
-            padding: 6px 10px;
-            border-radius: 6px;
-            outline: none;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        select:hover { background: #1e293b; }
-
-        .badge {
-            font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 10px;
-            background: var(--accent-blue);
-            color: #000;
-            font-weight: bold;
-        }
+        /* Prediction Ball Styling */
+        .prediction-balls { display: flex; gap: 4px; }
+        .ball { font-size: 1.1rem; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); }
+        .win-ball { color: var(--accent-green); }
+        .loss-ball { color: var(--accent-red); }
     </style>
 </head>
 <body>
 
-    <h1>IPL 2026 Predictor</h1>
+    <div class="header-container">
+        <h1>IPL 2026 Predictor</h1>
+        <div class="toggle-container">
+            <span id="label-current" class="toggle-label active-label">Current Status</span>
+            <label class="switch">
+                <input type="checkbox" id="modeToggle" onchange="handleModeChange()">
+                <span class="slider"></span>
+            </label>
+            <span id="label-predictor" class="toggle-label">Predictor Mode</span>
+        </div>
+    </div>
 
     <div class="dashboard">
         <div class="card">
-            <h3>Remaining Fixtures <span class="badge">LIVE</span></h3>
-            <table id="fixturesTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Match</th>
-                        <th>Winner</th>
-                    </tr>
-                </thead>
+            <h3>Fixtures <span style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:var(--accent-blue); color:#000; font-weight:bold;">LIVE</span></h3>
+            <table>
+                <thead><tr><th>Date</th><th>Match</th><th>Winner</th></tr></thead>
                 <tbody id="fixturesBody"></tbody>
             </table>
         </div>
 
         <div class="card">
-            <h3>Projected Standings</h3>
-            <table id="pointsTable">
+            <h3 id="standingTitle">Current Standings</h3>
+            <table>
                 <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Team</th>
-                        <th>P</th>
-                        <th>W</th>
-                        <th>Pts</th>
+                    <tr id="tableHead">
+                        <th>#</th><th>Team</th><th>P</th><th>W</th><th>Pts</th>
                     </tr>
                 </thead>
                 <tbody id="pointsBody"></tbody>
@@ -149,21 +102,21 @@
     </div>
 
     <script>
+        // Official data as of May 12, 2026
         const initialTeams = [
             { name: "RCB", p: 11, w: 7, pts: 14 },
             { name: "SRH", p: 11, w: 7, pts: 14 },
             { name: "GT", p: 11, w: 7, pts: 14 },
-            { name: "PBKS", p: 10, w: 6, pts: 12 },
+            { name: "PBKS", p: 11, w: 6, pts: 13 },
             { name: "CSK", p: 11, w: 6, pts: 12 },
             { name: "RR", p: 11, w: 6, pts: 12 },
-            { name: "KKR", p: 10, w: 4, pts: 8 },
-            { name: "DC", p: 11, w: 4, pts: 8 },
+            { name: "DC", p: 12, w: 5, pts: 10 },
+            { name: "KKR", p: 10, w: 4, pts: 9 },
             { name: "MI", p: 11, w: 3, pts: 6 },
             { name: "LSG", p: 11, w: 3, pts: 6 }
         ];
 
         const fixtures = [
-            { date: "May 11", t1: "PBKS", t2: "DC" },
             { date: "May 12", t1: "GT", t2: "SRH" },
             { date: "May 13", t1: "RCB", t2: "KKR" },
             { date: "May 14", t1: "PBKS", t2: "MI" },
@@ -181,76 +134,91 @@
             { date: "May 24", t1: "KKR", t2: "DC" }
         ];
 
-        // Function to determine which team is more likely to win based on current standings
         function getProbableWinner(teamA, teamB) {
             const t1 = initialTeams.find(t => t.name === teamA);
             const t2 = initialTeams.find(t => t.name === teamB);
-            
-            // Priority 1: Higher Points
-            if (t1.pts !== t2.pts) {
-                return t1.pts > t2.pts ? teamA : teamB;
-            }
-            // Priority 2: Higher Win Count if points are equal
+            if (t1.pts !== t2.pts) return t1.pts > t2.pts ? teamA : teamB;
             return t1.w >= t2.w ? teamA : teamB;
         }
 
         function init() {
             const fBody = document.getElementById('fixturesBody');
             fixtures.forEach((m, index) => {
-                const probableWinner = getProbableWinner(m.t1, m.t2);
-                
-                const row = `<tr class="match-row">
-                    <td class="date-text">${m.date}</td>
-                    <td>${m.t1} <small>vs</small> ${m.t2}</td>
+                const prob = getProbableWinner(m.t1, m.t2);
+                fBody.innerHTML += `<tr>
+                    <td style="font-size:0.8rem; color:var(--text-dim);">${m.date}</td>
+                    <td>${m.t1} vs ${m.t2}</td>
                     <td>
-                        <select class="win-select" data-index="${index}" onchange="updateTable()">
+                        <select class="win-select" data-index="${index}" data-saved="${prob}" onchange="updateTable()" disabled>
                             <option value="">Pending</option>
-                            <option value="${m.t1}" ${probableWinner === m.t1 ? 'selected' : ''}>${m.t1}</option>
-                            <option value="${m.t2}" ${probableWinner === m.t2 ? 'selected' : ''}>${m.t2}</option>
+                            <option value="${m.t1}">${m.t1}</option>
+                            <option value="${m.t2}">${m.t2}</option>
                         </select>
                     </td>
                 </tr>`;
-                fBody.innerHTML += row;
             });
-            updateTable(); // Run update immediately to show projected standings on load
+            updateTable();
+        }
+
+        function handleModeChange() {
+            const isPredictor = document.getElementById('modeToggle').checked;
+            const dropdowns = document.querySelectorAll('.win-select');
+            
+            document.getElementById('label-current').classList.toggle('active-label', !isPredictor);
+            document.getElementById('label-predictor').classList.toggle('active-label', isPredictor);
+            document.getElementById('standingTitle').innerText = isPredictor ? "Projected Standings" : "Current Standings";
+            
+            // Toggle Form Header
+            document.getElementById('tableHead').innerHTML = isPredictor 
+                ? '<th>#</th><th>Team</th><th>P</th><th>W</th><th>Pts</th><th>Predicted</th>' 
+                : '<th>#</th><th>Team</th><th>P</th><th>W</th><th>Pts</th>';
+
+            dropdowns.forEach(select => {
+                select.disabled = !isPredictor;
+                if (isPredictor) select.value = select.getAttribute('data-saved');
+                else { select.setAttribute('data-saved', select.value); select.value = ""; }
+            });
+            updateTable();
         }
 
         function updateTable() {
-            let currentStats = initialTeams.map(t => ({ ...t }));
+            const isPredictor = document.getElementById('modeToggle').checked;
+            let currentStats = initialTeams.map(t => ({ ...t, upcoming: [] }));
             const dropdowns = document.querySelectorAll('.win-select');
 
             dropdowns.forEach(select => {
                 const winner = select.value;
+                const match = fixtures[select.getAttribute('data-index')];
                 if (winner) {
-                    const matchIndex = select.getAttribute('data-index');
-                    const match = fixtures[matchIndex];
-                    
                     let wTeam = currentStats.find(t => t.name === winner);
-                    wTeam.w += 1; wTeam.p += 1; wTeam.pts += 2;
-
-                    const loser = (winner === match.t1) ? match.t2 : match.t1;
-                    let lTeam = currentStats.find(t => t.name === loser);
-                    lTeam.p += 1;
+                    wTeam.w++; wTeam.p++; wTeam.pts += 2;
+                    wTeam.upcoming.push('W');
+                    
+                    let lTeam = currentStats.find(t => t.name === (winner === match.t1 ? match.t2 : match.t1));
+                    lTeam.p++;
+                    lTeam.upcoming.push('L');
                 }
             });
 
-            // Sort by Points, then by Wins
             currentStats.sort((a, b) => b.pts - a.pts || b.w - a.w);
-
             const pBody = document.getElementById('pointsBody');
             pBody.innerHTML = '';
             currentStats.forEach((t, i) => {
-                const rowClass = i < 4 ? 'top-four' : '';
-                pBody.innerHTML += `<tr class="${rowClass}">
+                let row = `<tr class="${i < 4 ? 'top-four' : ''}">
                     <td class="pos-cell">${i + 1}</td>
                     <td class="team-cell">${t.name}</td>
-                    <td>${t.p}</td>
-                    <td>${t.w}</td>
-                    <td class="pts-cell">${t.pts}</td>
-                </tr>`;
+                    <td>${t.p}</td><td>${t.w}</td><td class="pts-cell">${t.pts}</td>`;
+                
+                if (isPredictor) {
+                    let balls = '<td class="prediction-balls">';
+                    t.upcoming.forEach(res => {
+                        balls += `<span class="ball ${res === 'W' ? 'win-ball' : 'loss-ball'}">●</span>`;
+                    });
+                    row += balls + '</td>';
+                }
+                pBody.innerHTML += row + '</tr>';
             });
         }
-
         window.onload = init;
     </script>
 </body>
