@@ -59,8 +59,8 @@
         select:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--text-dim); }
 
         /* Prediction Ball Styling */
-        .prediction-balls { display: flex; gap: 4px; }
-        .ball { font-size: 1.1rem; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); }
+        .prediction-balls { display: flex; gap: 4px; align-items: center; }
+        .ball { font-size: 1.1rem; filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); line-height: 1; }
         .win-ball { color: var(--accent-green); }
         .loss-ball { color: var(--accent-red); }
     </style>
@@ -81,7 +81,7 @@
 
     <div class="dashboard">
         <div class="card">
-            <h3>Fixtures <span style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:var(--accent-blue); color:#000; font-weight:bold;">LIVE</span></h3>
+            <h3>Remaining Fixtures <span style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:var(--accent-blue); color:#000; font-weight:bold;">LIVE</span></h3>
             <table>
                 <thead><tr><th>Date</th><th>Match</th><th>Winner</th></tr></thead>
                 <tbody id="fixturesBody"></tbody>
@@ -102,27 +102,22 @@
     </div>
 
     <script>
-        // Official data as of May 12, 2026
+        // Real standings data as of May 17, 2026
         const initialTeams = [
-            { name: "RCB", p: 11, w: 7, pts: 14 },
-            { name: "SRH", p: 11, w: 7, pts: 14 },
-            { name: "GT", p: 11, w: 7, pts: 14 },
-            { name: "PBKS", p: 11, w: 6, pts: 13 },
-            { name: "CSK", p: 11, w: 6, pts: 12 },
+            { name: "RCB", p: 12, w: 8, pts: 16 },
+            { name: "GT", p: 13, w: 8, pts: 16 },
+            { name: "SRH", p: 12, w: 7, pts: 14 },
+            { name: "PBKS", p: 12, w: 6, pts: 13 },
             { name: "RR", p: 11, w: 6, pts: 12 },
+            { name: "CSK", p: 12, w: 6, pts: 12 },
+            { name: "KKR", p: 12, w: 5, pts: 11 },
             { name: "DC", p: 12, w: 5, pts: 10 },
-            { name: "KKR", p: 10, w: 4, pts: 9 },
-            { name: "MI", p: 11, w: 3, pts: 6 },
-            { name: "LSG", p: 11, w: 3, pts: 6 }
+            { name: "MI", p: 12, w: 4, pts: 8 },
+            { name: "LSG", p: 12, w: 4, pts: 8 }
         ];
 
+        // Upcoming remaining league fixtures from May 17 onwards
         const fixtures = [
-            { date: "May 12", t1: "GT", t2: "SRH" },
-            { date: "May 13", t1: "RCB", t2: "KKR" },
-            { date: "May 14", t1: "PBKS", t2: "MI" },
-            { date: "May 15", t1: "LSG", t2: "CSK" },
-            { date: "May 16", t1: "KKR", t2: "GT" },
-            { date: "May 17", t1: "PBKS", t2: "RCB" },
             { date: "May 17", t1: "DC", t2: "RR" },
             { date: "May 18", t1: "CSK", t2: "SRH" },
             { date: "May 19", t1: "RR", t2: "LSG" },
@@ -168,7 +163,6 @@
             document.getElementById('label-predictor').classList.toggle('active-label', isPredictor);
             document.getElementById('standingTitle').innerText = isPredictor ? "Projected Standings" : "Current Standings";
             
-            // Toggle Form Header
             document.getElementById('tableHead').innerHTML = isPredictor 
                 ? '<th>#</th><th>Team</th><th>P</th><th>W</th><th>Pts</th><th>Predicted</th>' 
                 : '<th>#</th><th>Team</th><th>P</th><th>W</th><th>Pts</th>';
@@ -192,11 +186,11 @@
                 if (winner) {
                     let wTeam = currentStats.find(t => t.name === winner);
                     wTeam.w++; wTeam.p++; wTeam.pts += 2;
-                    wTeam.upcoming.push('W');
+                    wTeam.upcoming.push({ result: 'W', opp: winner === match.t1 ? match.t2 : match.t1 });
                     
                     let lTeam = currentStats.find(t => t.name === (winner === match.t1 ? match.t2 : match.t1));
                     lTeam.p++;
-                    lTeam.upcoming.push('L');
+                    lTeam.upcoming.push({ result: 'L', opp: winner });
                 }
             });
 
@@ -211,9 +205,13 @@
                 
                 if (isPredictor) {
                     let balls = '<td class="prediction-balls">';
-                    t.upcoming.forEach(res => {
-                        balls += `<span class="ball ${res === 'W' ? 'win-ball' : 'loss-ball'}">●</span>`;
-                    });
+                    if (t.upcoming.length === 0) {
+                        balls += '<span style="color:var(--text-dim); font-size:0.8rem;">No matches remaining</span>';
+                    } else {
+                        t.upcoming.forEach(matchInfo => {
+                            balls += `<span class="ball ${matchInfo.result === 'W' ? 'win-ball' : 'loss-ball'}" title="${matchInfo.result === 'W' ? 'Win' : 'Loss'} vs ${matchInfo.opp}">●</span>`;
+                        });
+                    }
                     row += balls + '</td>';
                 }
                 pBody.innerHTML += row + '</tr>';
